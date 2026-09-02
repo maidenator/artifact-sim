@@ -49,4 +49,4 @@ export type Artifact = {
     rarity: number;
     mainStat: MainStat;
     subStats: SubstatRoll[];
-};
+};  
