@@ -8,19 +8,19 @@
 
 namespace Distribution {
 
-const int RESIN_PER_RUN = 20;
-const double BASE_5_STAR_COUNT = 1;            // One 5* Artifact per run
-const double DOUBLE_5_STAR_CHANCE = 0.065;     // 6.5% Chance to get a second 5* Artifact per run
-const double SET_SPLIT_RATE = 0.50;            // Two sets per domain are equally split
-const double SLOT_SPLIT_RATE = 0.20;           // Each Artifact Slot has an equal likelihood (20%) of dropping
-const double FOUR_LINER_CHANCE = 0.20;         // A 5* Artifact has a 20% chance to spawn with 4 substats instead of 3
+constexpr int RESIN_PER_RUN = 20;
+constexpr double BASE_5_STAR_COUNT = 1;            // One 5* Artifact per run
+constexpr double DOUBLE_5_STAR_CHANCE = 0.065;     // 6.5% Chance to get a second 5* Artifact per run
+constexpr double SET_SPLIT_RATE = 0.50;            // Two sets per domain are equally split
+constexpr double SLOT_SPLIT_RATE = 0.20;           // Each Artifact Slot has an equal likelihood (20%) of dropping
+constexpr double FOUR_LINER_CHANCE = 0.20;         // A 5* Artifact has a 20% chance to spawn with 4 substats instead of 3
 
 
-const int FLOWER_MAIN_STAT_COUNT = 1;
-const int FEATHER_MAIN_STAT_COUNT = 1;
-const int SANDS_MAIN_STAT_COUNT = 5;
-const int GOBLET_MAIN_STAT_COUNT = 12;
-const int CIRCLET_MAIN_STAT_COUNT = 7;
+constexpr int FLOWER_MAIN_STAT_COUNT = 1;
+constexpr int FEATHER_MAIN_STAT_COUNT = 1;
+constexpr int SANDS_MAIN_STAT_COUNT = 5;
+constexpr int GOBLET_MAIN_STAT_COUNT = 12;
+constexpr int CIRCLET_MAIN_STAT_COUNT = 7;
 
 struct MainStatWeight {
     ArtifactMainStat stat;
@@ -161,8 +161,8 @@ constexpr std::array<ArtifactSubstat, 10> ALL_SUBSTATS = {{
 }};
 
 constexpr bool isMainStatConflict(ArtifactMainStat mainStat, ArtifactSubstat subStat) {
-        // If mainStat is within 0..9 and matches subStat's integer value, they are the same stat
-    return static_cast<int>(mainStat) == static_cast<int>(subStat);
+    const auto mainVal = static_cast<int>(mainStat);
+    return mainVal < 10 && mainVal == static_cast<int>(subStat);
 }
 
 constexpr uint32_t getSubStatWeight(ArtifactSubstat stat) {
