@@ -9,11 +9,11 @@
 namespace Distribution {
 
 const int RESIN_PER_RUN = 20;
-const int BASE_5_START_COUNT = 1;           // One 5* Artifact per run
-const int DOUBLE_5_STAR_CHANCE = 0.065;     // 6.5% Chance to get a second 5* Artifact per run
-const int SET_SPLIT_RATE = 0.50;            // Two sets per domain are equally split
-const int SLOT_SPLIT_RATE = 0.20;           // Each Artifact Slot has an equal likelihood (20%) of dropping
-const int FOUR_LINER_CHANCE = 0.20;         // A 5* Artifact has a 20% chance to spawn with 4 substats instead of 3
+const double BASE_5_STAR_COUNT = 1;            // One 5* Artifact per run
+const double DOUBLE_5_STAR_CHANCE = 0.065;     // 6.5% Chance to get a second 5* Artifact per run
+const double SET_SPLIT_RATE = 0.50;            // Two sets per domain are equally split
+const double SLOT_SPLIT_RATE = 0.20;           // Each Artifact Slot has an equal likelihood (20%) of dropping
+const double FOUR_LINER_CHANCE = 0.20;         // A 5* Artifact has a 20% chance to spawn with 4 substats instead of 3
 
 
 const int FLOWER_MAIN_STAT_COUNT = 1;
@@ -38,7 +38,7 @@ constexpr std::array<MainStatWeight, FEATHER_MAIN_STAT_COUNT> FEATHER_MAIN_STATS
     //                        Sum should be 100
 }};
 
-constexpr std::array<MainStatWeight, SANDS_MAIN_STAT_COUNT> SANDS_MAIN_STATS {{
+constexpr std::array<MainStatWeight, SANDS_MAIN_STAT_COUNT> SANDS_MAIN_STATS = {{
     //                  Main Stat   Probability of Rolling
     {ArtifactMainStat:: hpPercent,          26.68},
     {ArtifactMainStat:: atkPercent,         26.66},
@@ -48,7 +48,7 @@ constexpr std::array<MainStatWeight, SANDS_MAIN_STAT_COUNT> SANDS_MAIN_STATS {{
     //                        Sum should be 100
 }};
 
-constexpr std::array<MainStatWeight, GOBLET_MAIN_STAT_COUNT> GOBLET_MAIN_STATS {{
+constexpr std::array<MainStatWeight, GOBLET_MAIN_STAT_COUNT> GOBLET_MAIN_STATS = {{
     //                  Main Stat   Probability of Rolling
     {ArtifactMainStat:: hpPercent,          19.25},
     {ArtifactMainStat:: atkPercent,         19.25},
@@ -65,7 +65,7 @@ constexpr std::array<MainStatWeight, GOBLET_MAIN_STAT_COUNT> GOBLET_MAIN_STATS {
     //                        Sum should be 100
 }};
 
-constexpr std::array<MainStatWeight, CIRCLET_MAIN_STAT_COUNT> CIRCLET_MAIN_STATS {{
+constexpr std::array<MainStatWeight, CIRCLET_MAIN_STAT_COUNT> CIRCLET_MAIN_STATS = {{
     //                  Main Stat   Probability of Rolling
     {ArtifactMainStat:: hpPercent,          22.00},
     {ArtifactMainStat:: atkPercent,         22.00},
@@ -80,7 +80,7 @@ constexpr std::array<MainStatWeight, CIRCLET_MAIN_STAT_COUNT> CIRCLET_MAIN_STATS
 /*
     Returns a span containing the main stat along
     with its corresponding roll chance (in percent)
-    given a valid ArtifactSlot.
+    given a valid Artifact Slot.
 */
 
 inline std::span<const MainStatWeight> getMainStatPool(ArtifactSlot slot) {
@@ -133,8 +133,8 @@ constexpr StatScaling get5StarMainStatRange(ArtifactMainStat stat) {
     return {0.0, 0.0};
 }
 
-inline double getMainStatValue(ArtifactMainStat stat, int level, int rarity = 5) {
-    // Assuming 5-star artifact
+constexpr inline double getMainStatValue(ArtifactMainStat stat, int level, int rarity = 5) {
+    // Assuming 5* artifact
     if (rarity != 5 || level <= 0) {
         return get5StarMainStatRange(stat).base;
     }
@@ -144,6 +144,25 @@ inline double getMainStatValue(ArtifactMainStat stat, int level, int rarity = 5)
 
     const auto [base, max] = get5StarMainStatRange(stat);
     return base + ((max - base) / 20.0) * level;
+}
+
+
+constexpr std::array<ArtifactSubstat, 10> ALL_SUBSTATS = {{
+    ArtifactSubstat::critDmg,
+    ArtifactSubstat::critRate,
+    ArtifactSubstat::elementalMastery,
+    ArtifactSubstat::energyRecharge,
+    ArtifactSubstat::atkPercent,
+    ArtifactSubstat::atkFlat,
+    ArtifactSubstat::hpPercent,
+    ArtifactSubstat::hpFlat,
+    ArtifactSubstat::defPercent,
+    ArtifactSubstat::defFlat
+}};
+
+constexpr bool isMainStatConflict(ArtifactMainStat mainStat, ArtifactSubstat subStat) {
+    // If mainStat is within 0..9 and matches subStat's integer value, they are the same stat
+    return static_cast<int>(mainStat) == static_cast<int>(subStat);
 }
 
 constexpr uint32_t getSubStatWeight(ArtifactSubstat stat) {
