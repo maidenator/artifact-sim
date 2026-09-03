@@ -9,11 +9,11 @@
 namespace Distribution {
 
 constexpr int RESIN_PER_RUN = 20;
-constexpr int BASE_5_STAR_COUNT = 1;            // One 5* Artifact per run
-constexpr double DOUBLE_5_STAR_CHANCE = 0.065;     // 6.5% Chance to get a second 5* Artifact per run
-constexpr double SET_SPLIT_RATE = 0.50;            // Two sets per domain are equally split
-constexpr double SLOT_SPLIT_RATE = 0.20;           // Each Artifact Slot has an equal likelihood (20%) of dropping
-constexpr double FOUR_LINER_CHANCE = 0.20;         // A 5* Artifact has a 20% chance to spawn with 4 substats instead of 3
+constexpr int BASE_5_STAR_COUNT = 1;                // One 5* Artifact per run
+constexpr double DOUBLE_5_STAR_CHANCE = 0.065;      // 6.5% Chance to get a second 5* Artifact per run
+constexpr double SET_SPLIT_RATE = 0.50;             // Two sets per domain are equally split
+constexpr double SLOT_SPLIT_RATE = 0.20;            // Each Artifact Slot has an equal likelihood (20%) of dropping
+constexpr double FOUR_LINER_CHANCE = 0.20;          // A 5* Artifact has a 20% chance to spawn with 4 substats instead of 3
 
 
 constexpr int FLOWER_MAIN_STAT_COUNT = 1;
