@@ -161,7 +161,7 @@ constexpr std::array<ArtifactSubstat, 10> ALL_SUBSTATS = {{
 }};
 
 constexpr bool isMainStatConflict(ArtifactMainStat mainStat, ArtifactSubstat subStat) {
-    // If mainStat is within 0..9 and matches subStat's integer value, they are the same stat
+        // If mainStat is within 0..9 and matches subStat's integer value, they are the same stat
     return static_cast<int>(mainStat) == static_cast<int>(subStat);
 }
 
@@ -205,4 +205,5 @@ constexpr std::array<double, 4> getSubstatTiers(ArtifactSubstat stat) {
         case ArtifactSubstat::critDmg:          return {5.44,   6.22,   6.99,   7.77};
     }
     return {0.0, 0.0, 0.0, 0.0};
+}
 }
