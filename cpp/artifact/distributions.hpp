@@ -8,7 +8,7 @@
 
 namespace Distribution {
 
-constexpr int RESIN_PER_RUN = 20;
+constexpr int RESIN_PER_RUN = 20;                   // One run costs 20 Resin
 constexpr int BASE_5_STAR_COUNT = 1;                // One 5* Artifact per run
 constexpr double DOUBLE_5_STAR_CHANCE = 0.065;      // 6.5% Chance to get a second 5* Artifact per run
 constexpr double SET_SPLIT_RATE = 0.50;             // Two sets per domain are equally split
