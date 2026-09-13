@@ -6,7 +6,7 @@
 #include <cstdint>
 #include "types.hpp"
 
-namespace Distribution {
+namespace distributions {
 
 constexpr int RESIN_PER_RUN = 20;                   // One run costs 20 Resin
 constexpr int BASE_5_STAR_COUNT = 1;                // One 5* Artifact per run
@@ -83,7 +83,7 @@ constexpr std::array<MainStatWeight, CIRCLET_MAIN_STAT_COUNT> CIRCLET_MAIN_STATS
     given a valid Artifact Slot.
 */
 
-inline std::span<const MainStatWeight> getMainStatPool(ArtifactSlot slot) {
+inline std::span<const MainStatWeight> getMainStatWeights(ArtifactSlot slot) {
     switch (slot) {
         case ArtifactSlot::flower:  return FLOWER_MAIN_STATS;
         case ArtifactSlot::feather: return FEATHER_MAIN_STATS;
@@ -97,7 +97,7 @@ inline std::span<const MainStatWeight> getMainStatPool(ArtifactSlot slot) {
 struct StatScaling {
     double base; // Value at Level 0
     double max;  // Value at Level 20
-};
+};  
 
 constexpr StatScaling get5StarMainStatRange(ArtifactMainStat stat) {
     switch (stat) {
@@ -175,19 +175,19 @@ constexpr uint32_t getSubStatWeight(ArtifactSubstat stat) {
         case ArtifactSubstat::hpPercent:
         case ArtifactSubstat::atkPercent:
         case ArtifactSubstat::defPercent: 
-            return 4;
-
         case ArtifactSubstat::energyRecharge: 
         case ArtifactSubstat::elementalMastery:
+            return 4;
+
         case ArtifactSubstat::critRate:
         case ArtifactSubstat::critDmg:
             return 3;
-    }
+    }   
     return 0;
 }
 
-constexpr std::array<double, 4> getSubstatTiers(ArtifactSubstat stat) {
-    switch (stat) {
+constexpr std::array<double, 4> getSubstatValues(ArtifactSubstat subStat) {
+    switch (subStat) {
         // Flat Stats
         case ArtifactSubstat::hpFlat:           return {209.13, 239.00, 268.88, 298.75};
         case ArtifactSubstat::atkFlat:          return {13.62,  15.56,  17.51,  19.45};
@@ -206,4 +206,21 @@ constexpr std::array<double, 4> getSubstatTiers(ArtifactSubstat stat) {
     }
     return {0.0, 0.0, 0.0, 0.0};
 }
+
+constexpr std::optional<ArtifactSubstat> mainStatToSubStat(ArtifactMainStat mainStat) {
+    switch (mainStat) {
+        case ArtifactMainStat::hpFlat:              return ArtifactSubstat::hpFlat;
+        case ArtifactMainStat::atkFlat:             return ArtifactSubstat::atkFlat;
+        case ArtifactMainStat::defFlat:             return ArtifactSubstat::defFlat;
+        case ArtifactMainStat::hpPercent:           return ArtifactSubstat::hpPercent;
+        case ArtifactMainStat::atkPercent:          return ArtifactSubstat::atkPercent;
+        case ArtifactMainStat::defPercent:          return ArtifactSubstat::defPercent;
+        case ArtifactMainStat::energyRecharge:      return ArtifactSubstat::energyRecharge;
+        case ArtifactMainStat::elementalMastery:    return ArtifactSubstat::elementalMastery;
+        case ArtifactMainStat::critRate:            return ArtifactSubstat::critRate;
+        case ArtifactMainStat::critDmg:             return ArtifactSubstat::critDmg;
+        default: return std::nullopt;
+    }
+}
+
 }

@@ -38,7 +38,7 @@ enum class ArtifactMainStat {
     defPercent,
     defFlat,
 
-    // Exlusive
+    // Exclusive
     healingBonus,
     pyroDmg,
     hydroDmg,

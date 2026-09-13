@@ -55,7 +55,7 @@ class Xoshiro256 {
  * Generates a random number between 0 and bound - 1
  * uses lemire's algorithm to avoid modulo bias
  * 
- * @param bound upper limit for the random number (has to be positive)
+ * @param bound upper limit for the random number
  * @param rng the xoshiro256 random engine
  */
 
@@ -79,5 +79,22 @@ inline uint32_t fastUniform(int32_t bound, Xoshiro256 &rng) {
     }
 
     return static_cast<uint32_t>(m >> 64);
-}    
+}
+
+/**
+ * Wraps fastUniform into a function that generates a random number between:
+ * @param min lower bound for the random number
+ * @param max upper bound for the random number
+ * 
+ * @param rng the xoshiro256 random engine
+ */
+inline int32_t fastUniformRange(int32_t min, int32_t max, Xoshiro256 &rng) {
+    assert(min <= max && "Minimum must be less than or equal to maximum");
+    
+    int32_t range = (max - min) + 1;
+
+    uint32_t randomOffset = fastUniform(range, rng);
+    
+    return min + static_cast<int32_t>(randomOffset);
+}
 }

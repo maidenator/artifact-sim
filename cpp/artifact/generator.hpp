@@ -1,8 +1,10 @@
 #pragma once
 #include "types.hpp"
 #include "random_utils.hpp"
+#include "distributions.hpp"
 
 namespace generator {
+
 
 /**
  * Calculates the artifact's Crit Value (CV) using the standard formula:
@@ -11,10 +13,9 @@ namespace generator {
  * @param art The artifact object containing the substats to evaluate
  * @return float The total calculated crit value
  */
-
 inline float calculateCritValue(const Artifact &art) {
     float critValue = 0.0f;
-    for(int i  = 0; i < art.substatCount; ++i) {
+    for(size_t i  = 0; i < art.substatCount; ++i) {
         const auto &sub = art.subStats[i];
 
         if(sub.type == ArtifactSubstat::critDmg)
@@ -25,30 +26,147 @@ inline float calculateCritValue(const Artifact &art) {
     return critValue;
 }
 
-// ==========================================
-// TODOs for Tomorrow: Artifact Simulation Pipeline
-// ==========================================
 
 /**
- * @brief TODO: Selects a random main stat for a given artifact piece based on official drop weights.
+ * Selects a random main stat for a given artifact piece based on official drop weights.
  * 
  * @param pieceType The piece category (Flower, Plume, Sands, Goblet, Circlet).
  * @param rng Reference to the Xoshiro256 random engine.
- * @return ArtifactSubstatType The selected main stat.
+ * @return ArtifactMainStat The selected main stat.
  */
-// TODO: implement generateMainStat(...)
+inline ArtifactMainStat generateMainStat(ArtifactSlot pieceType, rng::Xoshiro256 &rng) {
+    // 1. Grab the weights for the given piece type
+    auto weights = distributions::getMainStatWeights(pieceType);
+    // 2. Generate a number between 0 - 100
+    double roll = rng::fastUniformRange(0, 100, rng);
 
+    // 3. Initialize a running sum that goes through the weight value/s of the given piece type.
+    double sum = 0.0;
+    for(const auto weight : weights) {
+        sum += weight.weight;
+        if(roll <= sum) {
+            // If the roll falls under the window we have found the randomized stat.
+            return weight.stat;
+        }
+    }
+    // Return the last stat in the list in case fastUniformRange returns 100.
+    return weights.back().stat;
+}
 
 
 /**
- * @brief TODO: Rolls the initial substats for a new artifact drop (handles 3 vs 4 starting lines and prevents duplicate stats).
+ * Selects a random substat value given the substat.
+ * 
+ * @param subStat The subStat category (critDmg, critRate, etc.).
+ * @param rng Reference to the Xoshiro256 random engine.
+ * @return double The selected substat roll.
+ */
+inline double rollSubstatValue(ArtifactSubstat subStat, rng::Xoshiro256 &rng) {
+    auto subStats = distributions::getSubstatValues(subStat);
+    return subStats[rng::fastUniformRange(0, 3, rng)];
+}
+
+
+/**
+ * Rolls the initial substats for a new artifact drop (handles 3 vs 4 starting lines and prevents duplicate stats).
  * 
  * @param mainStat The main stat type to ensure it doesn't duplicate into the substat pool.
  * @param rng Reference to the Xoshiro256 random engine.
  * @return Artifact The generated artifact with its initial rolls.
  */
-// TODO: implement generateInitialSubstats(...)
+inline Artifact generateArtifactSubstats(MainStat mainStat, rng::Xoshiro256 &rng) {
+    Artifact art;
 
+    // 1. Identify if we have a four liner. (1 in 5 chance for an artifact to start with four stats.)
+    bool isFourLiner = rng::fastUniformRange(0, 4, rng) == 0;
+
+    // 2. Initialize a pool of 10 unselected Substats
+    std::array<bool, 10> selectedStats = {false};
+    int substatSize = distributions::ALL_SUBSTATS.size();
+
+    // 3. Iterate through the substats and mark mainStat as selected so we do not pick it again
+    if (auto matchingSub = distributions::mainStatToSubStat(mainStat.type)) {
+        for (size_t i = 0; i < substatSize; ++i) {
+            if (distributions::ALL_SUBSTATS[i] == *matchingSub) {
+                selectedStats[i] = true;
+                break;
+            }
+        }
+    }
+
+    // 4. Determine how many substats to roll (3 or 4)
+    int substatCount = isFourLiner? 4 : 3;
+    art.substatCount = substatCount;
+    std::array<SubstatRoll, 4> substats {};
+
+    // 5. Loop to pick each substat
+    for(int i = 0; i < substatCount; ++i) {
+        // Sum the weights of unselected stats
+        uint32_t totalWeight = 0;
+
+        for(size_t j = 0; j < substatSize; ++j) {
+            if(!selectedStats[j]) totalWeight += distributions::getSubStatWeight(distributions::ALL_SUBSTATS[j]);
+        }
+        
+        // Roll random threshold
+        uint32_t roll = rng::fastUniformRange(0, totalWeight - 1, rng);
+        uint32_t sum = 0;
+        size_t chosenIndex = 0;
+        
+        // Find the winning substat
+        for(size_t j = 0; j < substatSize; ++j) {
+            if(selectedStats[j]) continue;
+
+            sum += distributions::getSubStatWeight(distributions::ALL_SUBSTATS[j]);
+            if(roll <= sum) {
+                chosenIndex = j;
+                break;
+            }
+        }
+
+        // Mark as selected so it won't repeat
+        selectedStats[chosenIndex] = true;
+        art.subStats[i].type = distributions::ALL_SUBSTATS[chosenIndex];
+        art.subStats[i].value = rollSubstatValue(distributions::ALL_SUBSTATS[chosenIndex], rng);
+    }
+
+    return art;
+}
+
+
+/**
+ * Generates a unique artifact ID, 
+ * 
+ * @param rng Reference to the Xoshiro256 random engine.
+ * @return String The generated id with the format "art_[id]".
+ */
+inline std::string generateArtifactId(rng::Xoshiro256 &rng) {
+    return "art_" + std::to_string(rng::fastUniformRange(100000000ULL, 999999999ULL, rng));
+}
+
+
+/**
+ * Generates a complete random 5-star Genshin Impact artifact, 
+ * including a unique ID, slot, main stat, and randomized substats.
+ * 
+ * @param rng Reference to the Xoshiro256 random engine.
+ * @return Artifact The fully generated artifact object.
+ */
+inline Artifact generateArtifact(rng::Xoshiro256 &rng) {
+    Artifact art;
+
+    art.id = generateArtifactId(rng);
+    art.slot = static_cast<ArtifactSlot>(rng::fastUniformRange(0, 4, rng));
+    art.level = 0;
+    
+    art.mainStat.type = generateMainStat(art.slot, rng);
+    Artifact substatPackage = generateArtifactSubstats(art.mainStat, rng);
+    
+    art.substatCount = substatPackage.substatCount;
+    art.subStats = substatPackage.subStats;
+
+    return art;
+}
 
 
 /**
@@ -59,6 +177,9 @@ inline float calculateCritValue(const Artifact &art) {
  */
 // TODO: implement upgradeArtifact(...)
 
+// inline void upgradeArtifact(Artifact &art, rng::Xoshiro256 &rng) {
+//     //WIP
+// }
 
 
 } // namespace generator
