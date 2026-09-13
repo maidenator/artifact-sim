@@ -2,36 +2,7 @@
 #include <cstdint>
 #include <cassert>
 
-/**
- * Generates a random number between 0 and bound - 1
- * uses lemire's algorithm to avoid modulo bias
- * 
- * @param bound upper limit for the random number (has to be positive)
- * @param rng the xoshiro256 random engine
- */
-
-inline uint32_t fastUniform(int32_t bound, Xoshiro256 &rng) {
-    assert(bound > 0 && "Bound must be a positive integer");
-
-    uint32_t ubound = static_cast<uint32_t>(bound);
-    uint64_t x = rng();
-    
-    // Use 128-bit math to prevent overflow from the 64-bit rng output    
-    __uint128_t m = static_cast<__uint128_t>(x) * ubound;
-    uint32_t l = static_cast<uint32_t>(m);
-
-    if (l < ubound) {
-        uint32_t threshold = -ubound % ubound;
-        while (l < threshold) {
-            x = rng();
-            m = static_cast<__uint128_t>(x) * ubound;
-            l = static_cast<uint32_t>(m);
-        }
-    }
-
-    return static_cast<uint32_t>(m >> 64);
-}
-
+namespace rng {
 class Xoshiro256 {
     private:
         // The 256-bit state is stored as four random 64-bit integers
@@ -79,3 +50,34 @@ class Xoshiro256 {
             return result;
         }
 };
+
+/**
+ * Generates a random number between 0 and bound - 1
+ * uses lemire's algorithm to avoid modulo bias
+ * 
+ * @param bound upper limit for the random number (has to be positive)
+ * @param rng the xoshiro256 random engine
+ */
+
+inline uint32_t fastUniform(int32_t bound, Xoshiro256 &rng) {
+    assert(bound > 0 && "Bound must be a positive integer");
+
+    uint32_t ubound = static_cast<uint32_t>(bound);
+    uint64_t x = rng();
+    
+    // Use 128-bit math to prevent overflow from the 64-bit rng output    
+    __uint128_t m = static_cast<__uint128_t>(x) * ubound;
+    uint32_t l = static_cast<uint32_t>(m);
+
+    if (l < ubound) {
+        uint32_t threshold = -ubound % ubound;
+        while (l < threshold) {
+            x = rng();
+            m = static_cast<__uint128_t>(x) * ubound;
+            l = static_cast<uint32_t>(m);
+        }
+    }
+
+    return static_cast<uint32_t>(m >> 64);
+}    
+}

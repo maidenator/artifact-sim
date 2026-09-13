@@ -38,6 +38,8 @@ inline float calculateCritValue(const Artifact &art) {
  */
 // TODO: implement generateMainStat(...)
 
+
+
 /**
  * @brief TODO: Rolls the initial substats for a new artifact drop (handles 3 vs 4 starting lines and prevents duplicate stats).
  * 
@@ -47,6 +49,8 @@ inline float calculateCritValue(const Artifact &art) {
  */
 // TODO: implement generateInitialSubstats(...)
 
+
+
 /**
  * @brief TODO: Simulates upgrading an artifact level, either adding a new substat or boosting an existing one.
  * 
@@ -54,5 +58,7 @@ inline float calculateCritValue(const Artifact &art) {
  * @param rng Reference to the Xoshiro256 random engine.
  */
 // TODO: implement upgradeArtifact(...)
+
+
 
 } // namespace generator
