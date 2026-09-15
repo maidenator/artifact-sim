@@ -34,7 +34,7 @@ inline float calculateCritValue(const Artifact &art) {
  * @param rng Reference to the Xoshiro256 random engine.
  * @return ArtifactMainStat The selected main stat.
  */
-inline ArtifactMainStat generateMainStat(ArtifactSlot pieceType, rng::Xoshiro256 &rng) {
+inline MainStat generateMainStat(ArtifactSlot pieceType, rng::Xoshiro256 &rng) {
     // 1. Grab the weights for the given piece type
     auto weights = distributions::getMainStatWeights(pieceType);
     // 2. Generate a number between 0 - 100
@@ -42,15 +42,21 @@ inline ArtifactMainStat generateMainStat(ArtifactSlot pieceType, rng::Xoshiro256
 
     // 3. Initialize a running sum that goes through the weight value/s of the given piece type.
     double sum = 0.0;
+    ArtifactMainStat chosenStat = weights.back().stat; // Fallback default 
+    
     for(const auto weight : weights) {
         sum += weight.weight;
         if(roll <= sum) {
-            // If the roll falls under the window we have found the randomized stat.
-            return weight.stat;
+            chosenStat = weight.stat;
+            break;
         }
     }
-    // Return the last stat in the list in case fastUniformRange returns 100.
-    return weights.back().stat;
+
+    // 4. Automatically compute the Level 0 base value right here
+    double baseValue = distributions::getMainStatValue(chosenStat, 0);
+
+    // 5. Return the fully initialized MainStat struct (Type + Level 0 Value)
+    return MainStat{ chosenStat, baseValue };
 }
 
 
@@ -160,7 +166,8 @@ inline Artifact generateArtifact(rng::Xoshiro256 &rng) {
     art.slot = static_cast<ArtifactSlot>(rng::fastUniformRange(0, 4, rng));
     art.level = 0;
     
-    art.mainStat.type = generateMainStat(art.slot, rng);
+    art.mainStat = generateMainStat(art.slot, rng);
+    
     Artifact substatPackage = generateArtifactSubstats(art.mainStat, rng);
     
     art.substatCount = substatPackage.substatCount;
@@ -244,5 +251,6 @@ inline void upgradeArtifactOnce(Artifact &art, rng::Xoshiro256 &rng) {
     }
 
     art.level += 4;
+    art.mainStat.value = distributions::getMainStatValue(art.mainStat.type, art.level);
 }
 } // namespace generator
