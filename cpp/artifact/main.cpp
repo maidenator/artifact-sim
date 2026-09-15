@@ -21,7 +21,7 @@ void printArtifact(const Artifact &art) {
     // Format main stat value to 1 decimal place (e.g., ATK%: +46.6)
     std::cout << "Main Stat: " << art.mainStat.type  
               << " | Value: +" << std::format("{:.1f}", art.mainStat.value) << "\n";
-              
+    
     std::cout << "Substats (" << art.substatCount << "):\n";
     
     for (int i = 0; i < art.substatCount; ++i) {    
