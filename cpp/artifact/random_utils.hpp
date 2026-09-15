@@ -58,14 +58,13 @@ class Xoshiro256 {
  * @param bound upper limit for the random number
  * @param rng the xoshiro256 random engine
  */
-
 inline uint32_t fastUniform(int32_t bound, Xoshiro256 &rng) {
     assert(bound > 0 && "Bound must be a positive integer");
 
     uint32_t ubound = static_cast<uint32_t>(bound);
     uint64_t x = rng();
     
-    // Use 128-bit math to prevent overflow from the 64-bit rng output    
+    // Prevents overflow from the 64-bit rng output    
     __uint128_t m = static_cast<__uint128_t>(x) * ubound;
     uint32_t l = static_cast<uint32_t>(m);
 

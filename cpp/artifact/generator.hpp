@@ -63,7 +63,8 @@ inline ArtifactMainStat generateMainStat(ArtifactSlot pieceType, rng::Xoshiro256
  */
 inline double rollSubstatValue(ArtifactSubstat subStat, rng::Xoshiro256 &rng) {
     auto subStats = distributions::getSubstatValues(subStat);
-    return subStats[rng::fastUniformRange(0, 3, rng)];
+    double rolledValue = subStats[rng::fastUniformRange(0, 3, rng)];
+    return std::round(rolledValue * 10.0) / 10.0;
 }
 
 
@@ -84,7 +85,7 @@ inline Artifact generateArtifactSubstats(MainStat mainStat, rng::Xoshiro256 &rng
     std::array<bool, 10> selectedStats = {false};
     int substatSize = distributions::ALL_SUBSTATS.size();
 
-    // 3. Iterate through the substats and mark mainStat as selected so we do not pick it again
+    // 3. Iterate through the substats and mark mainStat as selected so we cannot pick it again
     if (auto matchingSub = distributions::mainStatToSubStat(mainStat.type)) {
         for (size_t i = 0; i < substatSize; ++i) {
             if (distributions::ALL_SUBSTATS[i] == *matchingSub) {
@@ -94,7 +95,7 @@ inline Artifact generateArtifactSubstats(MainStat mainStat, rng::Xoshiro256 &rng
         }
     }
 
-    // 4. Determine how many substats to roll (3 or 4)
+    // 4. Determine how many substats to roll
     int substatCount = isFourLiner? 4 : 3;
     art.substatCount = substatCount;
     std::array<SubstatRoll, 4> substats {};
@@ -176,10 +177,72 @@ inline Artifact generateArtifact(rng::Xoshiro256 &rng) {
  * @param rng Reference to the Xoshiro256 random engine.
  */
 // TODO: implement upgradeArtifact(...)
+inline void upgradeArtifactOnce(Artifact &art, rng::Xoshiro256 &rng) {
+    assert(art.level < 20 && "Artifact level must be less than to equal to 20");
 
-// inline void upgradeArtifact(Artifact &art, rng::Xoshiro256 &rng) {
-//     //WIP
-// }
+    size_t totalPoolSize = distributions::ALL_SUBSTATS.size();
+    
+    // Initialize a pool of 10 unselected Substats
+    std::array<bool, 10> selectedStats = {false};
 
+    // Mark the Main Stat as selected
+    if (auto matchingSub = distributions::mainStatToSubStat(art.mainStat.type)) {
+        for (size_t i = 0; i < totalPoolSize; ++i) {
+            if (distributions::ALL_SUBSTATS[i] == *matchingSub) {
+                selectedStats[i] = true;
+                break;
+            }
+        }
+    }
 
+    // Mark all *currently existing* substats as selected
+    for (size_t i = 0; i < art.substatCount; ++i) {
+        for (size_t j = 0; j < totalPoolSize; ++j) {
+            if (distributions::ALL_SUBSTATS[j] == art.subStats[i].type) {
+                selectedStats[j] = true;
+                break;
+            }
+        }
+    }
+
+    // Check if the artifact is a four liner
+    bool isFourLiner = (art.substatCount == 4);
+
+    if(!isFourLiner) {
+        // Case A: Adding the 4th substat (3-liner upgrades to 4-liner)
+        uint32_t totalWeight = 0;
+        for (size_t j = 0; j < totalPoolSize; ++j) {
+            if (!selectedStats[j]) {
+                totalWeight += distributions::getSubStatWeight(distributions::ALL_SUBSTATS[j]);
+            }
+        }
+
+        uint32_t roll = rng::fastUniformRange(0, totalWeight - 1, rng);
+        uint32_t sum = 0;
+        size_t chosenIndex = 0;
+
+        for (size_t j = 0; j < totalPoolSize; ++j) {
+            if (selectedStats[j]) continue;
+            sum += distributions::getSubStatWeight(distributions::ALL_SUBSTATS[j]);
+            if (roll < sum) {
+                chosenIndex = j;
+                break;
+            }
+        }
+
+        // Add the new 4th substat
+        art.subStats[3] = {
+            distributions::ALL_SUBSTATS[chosenIndex],
+            rollSubstatValue(distributions::ALL_SUBSTATS[chosenIndex], rng)
+        };
+        art.substatCount = 4;
+    } else {
+        // Case B: Boosting an existing substat (Randomly pick one of the 4 to upgrade)
+        int upgradeIndex = rng::fastUniformRange(0, 3, rng);
+        // Add a roll's worth of value to the chosen substat
+        art.subStats[upgradeIndex].value += rollSubstatValue(art.subStats[upgradeIndex].type, rng);
+    }
+
+    art.level += 4;
+}
 } // namespace generator
