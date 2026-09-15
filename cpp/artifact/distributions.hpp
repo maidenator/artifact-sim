@@ -15,7 +15,6 @@ constexpr double SET_SPLIT_RATE = 0.50;             // Two sets per domain are e
 constexpr double SLOT_SPLIT_RATE = 0.20;            // Each Artifact Slot has an equal likelihood (20%) of dropping
 constexpr double FOUR_LINER_CHANCE = 0.20;          // A 5* Artifact has a 20% chance to spawn with 4 substats instead of 3
 
-
 constexpr int FLOWER_MAIN_STAT_COUNT = 1;
 constexpr int FEATHER_MAIN_STAT_COUNT = 1;
 constexpr int SANDS_MAIN_STAT_COUNT = 5;
@@ -145,7 +144,6 @@ constexpr inline double getMainStatValue(ArtifactMainStat stat, int level, int r
     const auto [base, max] = get5StarMainStatRange(stat);
     return base + ((max - base) / 20.0) * level;
 }
-
 
 constexpr std::array<ArtifactSubstat, 10> ALL_SUBSTATS = {{
     ArtifactSubstat::critDmg,

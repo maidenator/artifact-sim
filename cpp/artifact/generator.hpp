@@ -5,7 +5,6 @@
 
 namespace generator {
 
-
 /**
  * Calculates the artifact's Crit Value (CV) using the standard formula:
  * Crit DMG + (Crit Rate * 2)
@@ -26,7 +25,6 @@ inline float calculateCritValue(const Artifact &art) {
     return critValue;
 }
 
-
 /**
  * Selects a random main stat for a given artifact piece based on official drop weights.
  * 
@@ -43,7 +41,7 @@ inline MainStat generateMainStat(ArtifactSlot pieceType, rng::Xoshiro256 &rng) {
     // 3. Initialize a running sum that goes through the weight value/s of the given piece type.
     double sum = 0.0;
     ArtifactMainStat chosenStat = weights.back().stat; // Fallback default 
-    
+
     for(const auto weight : weights) {
         sum += weight.weight;
         if(roll <= sum) {
@@ -59,7 +57,6 @@ inline MainStat generateMainStat(ArtifactSlot pieceType, rng::Xoshiro256 &rng) {
     return MainStat{ chosenStat, baseValue };
 }
 
-
 /**
  * Selects a random substat value given the substat.
  * 
@@ -72,7 +69,6 @@ inline double rollSubstatValue(ArtifactSubstat subStat, rng::Xoshiro256 &rng) {
     double rolledValue = subStats[rng::fastUniformRange(0, 3, rng)];
     return std::round(rolledValue * 10.0) / 10.0;
 }
-
 
 /**
  * Rolls the initial substats for a new artifact drop (handles 3 vs 4 starting lines and prevents duplicate stats).
@@ -140,7 +136,6 @@ inline Artifact generateArtifactSubstats(MainStat mainStat, rng::Xoshiro256 &rng
     return art;
 }
 
-
 /**
  * Generates a unique artifact ID, 
  * 
@@ -150,7 +145,6 @@ inline Artifact generateArtifactSubstats(MainStat mainStat, rng::Xoshiro256 &rng
 inline std::string generateArtifactId(rng::Xoshiro256 &rng) {
     return "art_" + std::to_string(rng::fastUniformRange(100000000ULL, 999999999ULL, rng));
 }
-
 
 /**
  * Generates a complete random 5-star Genshin Impact artifact, 
@@ -175,7 +169,6 @@ inline Artifact generateArtifact(rng::Xoshiro256 &rng) {
 
     return art;
 }
-
 
 /**
  * @brief TODO: Simulates upgrading an artifact level, either adding a new substat or boosting an existing one.
