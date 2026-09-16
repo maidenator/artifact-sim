@@ -1,8 +1,8 @@
 #pragma once
+#include <cmath>
 #include "types.hpp"
 #include "random_utils.hpp"
 #include "distributions.hpp"
-
 namespace generator {
 
 /**
